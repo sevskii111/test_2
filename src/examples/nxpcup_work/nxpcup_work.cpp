@@ -60,7 +60,7 @@ void NxpCupWork::roverSteerSpeed(roverControl control, vehicle_attitude_setpoint
 {
 	// Converting steering value from percent to euler angle
 	control.steer *= -60.0f; //max turn angle 60 degree
-	control.steer *= (float)3.14159/180; // change to radians
+	control.steer *= (float)3.14159 / 180; // change to radians
 
 	// Get current attitude quaternion
 	matrix::Quatf current_qe{att.q[0], att.q[1], att.q[2], att.q[3]};
@@ -95,7 +95,7 @@ void NxpCupWork::Run()
 	// DO WORK
 	roverControl motorControl;
 
-	struct vehicle_control_mode_s _control_mode{};
+	struct vehicle_control_mode_s _control_mode {};
 
 	_control_mode.flag_control_manual_enabled = false;
 	_control_mode.flag_control_attitude_enabled = true;
@@ -107,11 +107,13 @@ void NxpCupWork::Run()
 	const pixy_vector_s &pixy = pixy_sub.get();
 
 	motorControl = raceTrack(pixy);
+	motorControl.steer = 1;
+	motorControl.speed = 1;
 
 	att_sub.update();
 	struct vehicle_attitude_s att = att_sub.get();
 
-	struct vehicle_attitude_setpoint_s _att_sp{};
+	struct vehicle_attitude_setpoint_s _att_sp {};
 
 	NxpCupWork::roverSteerSpeed(motorControl, _att_sp, att);
 

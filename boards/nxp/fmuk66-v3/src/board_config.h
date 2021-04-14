@@ -55,6 +55,8 @@ __BEGIN_DECLS
 
 __END_DECLS
 
+#define REAL_CAR
+
 /* FMUK66 GPIOs ***********************************************************************************/
 /* LEDs */
 /* An RGB LED is connected through GPIO as shown below:

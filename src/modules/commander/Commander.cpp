@@ -163,6 +163,7 @@ static bool send_vehicle_command(uint16_t cmd, float param1 = NAN, float param2 
 
 int Commander::custom_command(int argc, char *argv[])
 {
+
 	if (!is_running()) {
 		print_usage("not running");
 		return 1;
@@ -513,6 +514,7 @@ Commander::Commander() :
 	_status.nav_state = vehicle_status_s::NAVIGATION_STATE_MANUAL;
 	_status.nav_state_timestamp = hrt_absolute_time();
 	_status.arming_state = vehicle_status_s::ARMING_STATE_INIT;
+	//
 
 	/* mark all signals lost as long as they haven't been found */
 	_status.rc_signal_lost = true;
@@ -1569,6 +1571,7 @@ Commander::run()
 	PreFlightCheck::preflightCheck(&_mavlink_log_pub, _status, _status_flags, false,
 				       true,
 				       hrt_elapsed_time(&_boot_timestamp));
+
 
 	while (!should_exit()) {
 
@@ -2717,6 +2720,16 @@ Commander::run()
 		px4_indicate_external_reset_lockout(LockoutComponent::Commander, _armed.armed);
 
 		px4_usleep(COMMANDER_MONITORING_INTERVAL);
+
+
+		if (!_armed.armed && hrt_elapsed_time(&_boot_timestamp) >= 2_s) {
+			mavlink_log_critical(&_mavlink_log_pub, "HI");
+			// arm(arm_disarm_reason_t::COMMAND_INTERNAL, false);
+			char armCommand[] = {'a', 'r', 'm', 0};
+			char forceCommand[] = {'-', 'f', 0};
+			char *commands[] = {armCommand, forceCommand};
+			custom_command(2, commands);
+		}
 	}
 
 	rgbled_set_color_and_mode(led_control_s::COLOR_WHITE, led_control_s::MODE_OFF);

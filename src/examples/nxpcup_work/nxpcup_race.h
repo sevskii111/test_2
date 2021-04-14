@@ -32,42 +32,52 @@
  ****************************************************************************/
 
 /**
- * @file hello_example.cpp
+ * @file hello_example.h
  * Race code for NXP Cup
  *
  * @author Katrin Moritz
  */
+#ifndef NXPCUP_RACE_
+#define NXPCUP_RACE_
 
-#include "nxpcup_race.h"
+#include <px4_defines.h>
+#include <uORB/topics/pixy_vector.h>
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#define SPEED_FAST	0.15f
+#define SPEED_NORMAL	0.1f
+#define SPEED_SLOW	0.05f
+#define SPEED_STOP	0.0f
 
-#ifdef REAL_CAR
-roverControl raceTrack(Pixy2 &pixy)
+struct roverControl {
+	float steer;
+	float speed;
+};
+
+struct _vector {
+	float x;
+	float y;
+	float norm;
+	float grad;
+};
+
+struct Vector
 {
-	roverControl control{};
-	/* instert you algorithm here */
+	void print()
+	{
+		char buf[64];
+		sprintf(buf, "vector: (%d %d) (%d %d)", m_x0, m_y0, m_x1, m_y1);
+		printf(buf);
+		printf("\n");
+	}
 
-	// test values for speed and steering
-	control.steer = 0.5f;
-	control.speed = 0.1f;
+	uint8_t m_x0;
+	uint8_t m_y0;
+	uint8_t m_x1;
+	uint8_t m_y1;
+};
 
+roverControl raceTrack(const pixy_vector_s &pixy);
+uint8_t get_num_vectors(Vector &vec1, Vector &vec2);
+Vector copy_vectors(pixy_vector_s &pixy, uint8_t num);
 
-	return control;
-}
-#else
-roverControl raceTrack()
-{
-	roverControl control{};
-	/* instert you algorithm here */
-
-	// test values for speed and steering
-	control.steer = 0.f;
-	control.speed = .1f;
-
-
-	return control;
-}
 #endif

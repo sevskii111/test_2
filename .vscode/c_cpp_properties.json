@@ -9,7 +9,8 @@
             "macFrameworkPath": [],
             "configurationProvider": "ms-vscode.cmake-tools",
             "cppStandard": "c++14",
-            "cStandard": "c11"
+            "cStandard": "c11",
+            "compilerPath": "/bin/g++"
         }
     ],
     "version": 4

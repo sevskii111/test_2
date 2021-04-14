@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright 2019 NXP.
+ * Copyright 2020 Charmed Labs.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,43 +31,65 @@
  *
  ****************************************************************************/
 
-/**
- * @file hello_example.cpp
- * Race code for NXP Cup
- *
- * @author Katrin Moritz
- */
+//
+// This file is for defining the Block struct and the Pixy template class version 2.
+// (TPixy2).  TPixy takes a communication link as a template parameter so that
+// all communication modes (SPI, I2C and UART) can share the same code.
+//
 
-#include "nxpcup_race.h"
+#ifndef _PIXY2VIDEO_H
+#define _PIXY2VIDEO_H
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#define VIDEO_REQUEST_GET_RGB 0x70
 
-#ifdef REAL_CAR
-roverControl raceTrack(Pixy2 &pixy)
+template <class LinkType>
+class TPixy2;
+
+template <class LinkType>
+class Pixy2Video
 {
-	roverControl control{};
-	/* instert you algorithm here */
+public:
+  Pixy2Video(TPixy2<LinkType> *pixy)
+  {
+    m_pixy = pixy;
+  }
 
-	// test values for speed and steering
-	control.steer = 0.5f;
-	control.speed = 0.1f;
+  int8_t getRGB(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b, bool saturate = true);
 
+private:
+  TPixy2<LinkType> *m_pixy;
+};
 
-	return control;
-}
-#else
-roverControl raceTrack()
+template <class LinkType>
+int8_t Pixy2Video<LinkType>::getRGB(uint16_t x, uint16_t y, uint8_t *r, uint8_t *g, uint8_t *b, bool saturate)
 {
-	roverControl control{};
-	/* instert you algorithm here */
-
-	// test values for speed and steering
-	control.steer = 0.f;
-	control.speed = .1f;
-
-
-	return control;
+  while (1)
+  {
+    *(int16_t *)(m_pixy->m_bufPayload + 0) = x;
+    *(int16_t *)(m_pixy->m_bufPayload + 2) = y;
+    *(m_pixy->m_bufPayload + 4) = saturate;
+    m_pixy->m_length = 5;
+    m_pixy->m_type = VIDEO_REQUEST_GET_RGB;
+    m_pixy->sendPacket();
+    if (m_pixy->recvPacket() == 0)
+    {
+      if (m_pixy->m_type == PIXY_TYPE_RESPONSE_RESULT && m_pixy->m_length == 4)
+      {
+        *b = *(m_pixy->m_buf + 0);
+        *g = *(m_pixy->m_buf + 1);
+        *r = *(m_pixy->m_buf + 2);
+        return 0;
+      }
+      // deal with program changing
+      else if (m_pixy->m_type == PIXY_TYPE_RESPONSE_ERROR && (int8_t)m_pixy->m_buf[0] == PIXY_RESULT_PROG_CHANGING)
+      {
+        //delayMicroseconds(500); // don't be a drag
+        sleep(1);
+        continue;
+      }
+    }
+    return PIXY_RESULT_ERROR;
+  }
 }
+
 #endif

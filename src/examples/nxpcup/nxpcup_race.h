@@ -41,12 +41,7 @@
 #define NXPCUP_RACE_
 
 #include <px4_defines.h>
-#include <uORB/topics/pixy_vector.h>
 
-#define SPEED_FAST	0.15f
-#define SPEED_NORMAL	0.1f
-#define SPEED_SLOW	0.05f
-#define SPEED_STOP	0.0f
 
 struct roverControl {
 	float steer;
@@ -60,24 +55,24 @@ struct _vector {
 	float grad;
 };
 
-struct Vector
+#ifdef REAL_CAR
+#include "Pixy2I2C_PX4.h"
+//roverControl raceTrack(Pixy2 &pixy);
+roverControl raceTrack(Pixy2 &pixy)
 {
-	void print()
-	{
-		char buf[64];
-		sprintf(buf, "vector: (%d %d) (%d %d)", m_x0, m_y0, m_x1, m_y1);
-		printf(buf);
-		printf("\n");
-	}
+	roverControl control{};
+	/* instert you algorithm here */
 
-	uint8_t m_x0;
-	uint8_t m_y0;
-	uint8_t m_x1;
-	uint8_t m_y1;
-};
+	// test values for speed and steering
+	control.steer = 0.5f;
+	control.speed = 0.1f;
 
-roverControl raceTrack(const pixy_vector_s &pixy);
-uint8_t get_num_vectors(Vector &vec1, Vector &vec2);
-Vector copy_vectors(pixy_vector_s &pixy, uint8_t num);
+
+	return control;
+}
+#else
+roverControl raceTrack();
+#endif
+
 
 #endif

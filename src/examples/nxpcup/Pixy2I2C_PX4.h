@@ -1,6 +1,7 @@
 /****************************************************************************
  *
- *   Copyright 2019 NXP.
+ * Copyright 2020 Charmed Labs.
+ * Copyright 2020 NXP.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,43 +32,88 @@
  *
  ****************************************************************************/
 
-/**
- * @file hello_example.cpp
- * Race code for NXP Cup
- *
- * @author Katrin Moritz
- */
+//
+// Arduino ICSP SPI link class
 
-#include "nxpcup_race.h"
+#ifndef _PIXY2_H
+#define _PIXY2_H
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include "TPixy2.h"
+#include <drivers/device/i2c.h>
+#include "board_config.h"
 
-#ifdef REAL_CAR
-roverControl raceTrack(Pixy2 &pixy)
+#define IRLOCK_I2C_BUS 1
+#define IRLOCK_I2C_ADDRESS 0x54 /** 7-bit address (non shifted) **/
+
+#define IRLOCK0_DEVICE_PATH "/dev/Pixy2"
+
+class PIXY2_I2C : public device::I2C
 {
-	roverControl control{};
-	/* instert you algorithm here */
+public:
+	PIXY2_I2C() : I2C(0, "PIXY2_I2C", IRLOCK_I2C_BUS, IRLOCK_I2C_ADDRESS, 400000)
+	{
+		_external = true;
+	}
 
-	// test values for speed and steering
-	control.steer = 0.5f;
-	control.speed = 0.1f;
+	virtual ~PIXY2_I2C() = default;
 
+	bool is_external()
+	{
+		return _external;
+	};
+	int init()
+	{
+		return I2C::init();
+	};
 
-	return control;
-}
-#else
-roverControl raceTrack()
-{
-	roverControl control{};
-	/* instert you algorithm here */
+	int8_t open(uint32_t arg)
+	{
+		return I2C::init();
+		;
+	}
 
-	// test values for speed and steering
-	control.steer = 0.f;
-	control.speed = .1f;
+	void close()
+	{
+		;
+	}
 
+	int16_t recv(uint8_t *buf, uint8_t len, uint16_t *cs = NULL)
+	{
+		uint8_t i;
 
-	return control;
-}
+		if (cs)
+		{
+			*cs = 0;
+		}
+
+		transfer(nullptr, 0, &buf[0], len);
+
+		for (i = 0; i < len; i++)
+		{
+
+			if (cs)
+			{
+				*cs += buf[i];
+			}
+		}
+
+		return len;
+	}
+
+	int16_t send(uint8_t *buf, uint8_t len)
+	{
+
+		transfer(&buf[0], len, nullptr, 0);
+		//int ret_tran = transfer(&buf[0], len, nullptr, 0);
+		//printf("ret_tran = %i\n", ret_tran);
+
+		return len;
+	}
+
+private:
+	bool _external;
+};
+
+typedef TPixy2<PIXY2_I2C> Pixy2;
+
 #endif

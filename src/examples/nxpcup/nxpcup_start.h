@@ -32,42 +32,38 @@
  ****************************************************************************/
 
 /**
- * @file hello_example.cpp
- * Race code for NXP Cup
+ * @file nxpcup_start.h
+ *
  *
  * @author Katrin Moritz
  */
+#ifndef NXPCUP_START_
+#define NXPCUP_START_
 
-#include "nxpcup_race.h"
+#include <px4_platform_common/px4_config.h>
+#include <px4_platform_common/log.h>
+#include <px4_platform_common/app.h>
+#include <px4_platform_common/init.h>
+#include <px4_platform_common/tasks.h>
+#include <px4_platform_common/posix.h>
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+#include <sched.h>
+#include <lib/matrix/matrix/Euler.hpp>
+#include <lib/matrix/matrix/Quaternion.hpp>
 
-#ifdef REAL_CAR
-roverControl raceTrack(Pixy2 &pixy)
-{
-	roverControl control{};
-	/* instert you algorithm here */
-
-	// test values for speed and steering
-	control.steer = 0.5f;
-	control.speed = 0.1f;
-
-
-	return control;
-}
-#else
-roverControl raceTrack()
-{
-	roverControl control{};
-	/* instert you algorithm here */
-
-	// test values for speed and steering
-	control.steer = 0.f;
-	control.speed = .1f;
+#include <uORB/Subscription.hpp>
+#include <uORB/Publication.hpp>
+#include <uORB/uORB.h>
+#include <uORB/topics/vehicle_control_mode.h>
+#include <uORB/topics/vehicle_attitude_setpoint.h>
+#include <uORB/topics/safety.h>
 
 
-	return control;
-}
+#include <uORB/topics/pixy_vector.h>
+#endif /*NXPCUP_START_*/
+
+#ifndef REAL_CAR
+#include <uORB/topics/vehicle_attitude.h>
 #endif
